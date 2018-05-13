@@ -1,0 +1,118 @@
+/** 
+ * 
+ */
+package carpooling
+
+import io.sarl.core.AgentKilled
+import io.sarl.core.AgentSpawned
+import io.sarl.core.ContextJoined
+import io.sarl.core.ContextLeft
+import io.sarl.core.Destroy
+import io.sarl.core.Initialize
+import io.sarl.core.Logging
+import io.sarl.core.MemberJoined
+import io.sarl.core.MemberLeft
+import io.sarl.core.Behaviors
+import io.sarl.core.InnerContextAccess
+import io.sarl.core.Lifecycle
+import io.sarl.core.Schedules
+import java.util.ArrayList
+import io.sarl.lang.core.Address
+
+/** 
+ * @author Professional
+ * 
+ */
+agent MatchSystem {
+	uses Behaviors, InnerContextAccess, Lifecycle, Schedules, Logging
+	
+	var matches : ArrayList<SingleProposition>
+	
+
+	on Initialize {
+		// Event trigger before the agent begin to live or to be used.
+		// You should put all the initialization statements in this block of code.
+		info("The agent was started.")
+		Map.initMap()
+		info("Creating people")
+		for (i : 1 .. 100) {
+			spawnInContext(typeof(Person), innerContext)
+		}
+		
+		matches = new ArrayList<SingleProposition>()
+		wake(new MatchStart())
+		
+		in(10000) [
+			val waitTask = task("wait-task")
+			var matchesToErase = new ArrayList<SingleProposition>()
+			waitTask.every(1000) [
+				synchronized (this) 
+				{
+					for(match : matches)
+					{
+						var matchPeople = Utils.GetAllMatched(matches, match)
+						if(matchPeople.size() >= 2)
+						{
+							info("found: " + matchPeople.size())
+							matchesToErase.addAll(matchPeople)
+							for(mp : matchPeople)
+							{
+								var others = new ArrayList<Address>()
+								for(p : matchPeople)
+								{
+									if(p != mp) others.add(p.who)
+								}
+								wake(new Matched(others, mp.startLocation, mp.destination))
+									[it == mp.who]
+							}
+							break
+						}
+					}
+					matches.removeAll(matchesToErase)
+				}
+			]
+		]
+	}
+
+	on Match {
+		info("Receiving S D: " + occurrence.startLocation.getLocationName() + " " + occurrence.destination.getLocationName())
+		synchronized (this) {
+			matches.add(new SingleProposition(occurrence.source, occurrence.startLocation, occurrence.destination))
+		}
+	}
+
+
+	on Destroy {
+		// Event trigger when the agent is destroyed from the system.
+		// You should put all the resource releasing statements in this block of code.
+		info("The agent was stopped.")
+	}
+
+	on AgentSpawned {
+		// A new agent has been spawned in our context.
+	}
+
+	on AgentKilled {
+		// A new agent has been killed in our context.
+	}
+
+	on ContextJoined {
+		// Event trigger when an agent of the level joins a shared context.
+		// Sent to a agent of the same level.
+	}
+
+	on ContextLeft {
+		// Event trigger when an agent of the level jleaves a shared context.
+		// Sent to a agent of the same level.
+	}
+
+	on MemberJoined {
+		// Event trigger when an agent joins one of our shared super-holons.
+		// Sent to all members of the considered super-holon.
+	}
+
+	on MemberLeft {
+		// Event trigger when an agent leaves one of our shared super-holons.
+		// Sent to all members of the considered super-holon.
+	}
+}
