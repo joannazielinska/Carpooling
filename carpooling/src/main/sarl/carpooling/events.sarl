@@ -1,0 +1,29 @@
+package carpooling
+
+import io.sarl.lang.core.Address
+import java.util.ArrayList
+
+event Match {
+	val startLocation : Location
+	val destination : Location
+	
+
+	new(startLocation : Location, destination : Location) {
+		this.startLocation = startLocation
+		this.destination = destination
+	}
+}
+
+event Matched {
+	val startLocation : Location
+	val destination : Location
+	val others : ArrayList<Address>
+
+	new(others : ArrayList<Address>, startLocation : Location, destination : Location) {
+		this.startLocation = startLocation
+		this.destination = destination
+		this.others = others
+	}
+}
+
+event MatchStart
