@@ -52,7 +52,4 @@ public class Matched extends Event {
     builder.add("destination", this.destination);
     builder.add("others", this.others);
   }
-  
-  @SyntheticMember
-  private final static long serialVersionUID = -1779327729L;
 }

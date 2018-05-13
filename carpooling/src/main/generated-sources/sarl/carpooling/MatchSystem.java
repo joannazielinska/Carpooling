@@ -44,13 +44,14 @@ import org.eclipse.xtext.xbase.lib.IntegerRange;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
 import org.eclipse.xtext.xbase.lib.Pure;
 
-/**
- * @author Professional
- */
 @SarlSpecification("0.7")
 @SarlElementType(18)
 @SuppressWarnings("all")
 public class MatchSystem extends Agent {
+  private int agentNumber;
+  
+  private int carpoolingAgentsNumber;
+  
   private ArrayList<SingleProposition> matches;
   
   @SyntheticMember
@@ -58,9 +59,10 @@ public class MatchSystem extends Agent {
     Logging _$CAPACITY_USE$IO_SARL_CORE_LOGGING$CALLER = this.$castSkill(Logging.class, (this.$CAPACITY_USE$IO_SARL_CORE_LOGGING == null || this.$CAPACITY_USE$IO_SARL_CORE_LOGGING.get() == null) ? (this.$CAPACITY_USE$IO_SARL_CORE_LOGGING = this.$getSkill(Logging.class)) : this.$CAPACITY_USE$IO_SARL_CORE_LOGGING);
     _$CAPACITY_USE$IO_SARL_CORE_LOGGING$CALLER.info("The agent was started.");
     Map.initMap();
+    this.agentNumber = 100;
     Logging _$CAPACITY_USE$IO_SARL_CORE_LOGGING$CALLER_1 = this.$castSkill(Logging.class, (this.$CAPACITY_USE$IO_SARL_CORE_LOGGING == null || this.$CAPACITY_USE$IO_SARL_CORE_LOGGING.get() == null) ? (this.$CAPACITY_USE$IO_SARL_CORE_LOGGING = this.$getSkill(Logging.class)) : this.$CAPACITY_USE$IO_SARL_CORE_LOGGING);
     _$CAPACITY_USE$IO_SARL_CORE_LOGGING$CALLER_1.info("Creating people");
-    IntegerRange _upTo = new IntegerRange(1, 100);
+    IntegerRange _upTo = new IntegerRange(1, this.agentNumber);
     for (final Integer i : _upTo) {
       Lifecycle _$CAPACITY_USE$IO_SARL_CORE_LIFECYCLE$CALLER = this.$castSkill(Lifecycle.class, (this.$CAPACITY_USE$IO_SARL_CORE_LIFECYCLE == null || this.$CAPACITY_USE$IO_SARL_CORE_LIFECYCLE.get() == null) ? (this.$CAPACITY_USE$IO_SARL_CORE_LIFECYCLE = this.$getSkill(Lifecycle.class)) : this.$CAPACITY_USE$IO_SARL_CORE_LIFECYCLE);
       InnerContextAccess _$CAPACITY_USE$IO_SARL_CORE_INNERCONTEXTACCESS$CALLER = this.$castSkill(InnerContextAccess.class, (this.$CAPACITY_USE$IO_SARL_CORE_INNERCONTEXTACCESS == null || this.$CAPACITY_USE$IO_SARL_CORE_INNERCONTEXTACCESS.get() == null) ? (this.$CAPACITY_USE$IO_SARL_CORE_INNERCONTEXTACCESS = this.$getSkill(InnerContextAccess.class)) : this.$CAPACITY_USE$IO_SARL_CORE_INNERCONTEXTACCESS);
@@ -82,13 +84,16 @@ public class MatchSystem extends Agent {
           for (final SingleProposition match : this.matches) {
             {
               ArrayList<SingleProposition> matchPeople = Utils.GetAllMatched(this.matches, match);
-              int _size = matchPeople.size();
-              boolean _greaterEqualsThan = (_size >= 2);
-              if (_greaterEqualsThan) {
+              if (((!Objects.equal(matchPeople, null)) && (matchPeople.size() >= 2))) {
                 Logging _$CAPACITY_USE$IO_SARL_CORE_LOGGING$CALLER_2 = this.$castSkill(Logging.class, (this.$CAPACITY_USE$IO_SARL_CORE_LOGGING == null || this.$CAPACITY_USE$IO_SARL_CORE_LOGGING.get() == null) ? (this.$CAPACITY_USE$IO_SARL_CORE_LOGGING = this.$getSkill(Logging.class)) : this.$CAPACITY_USE$IO_SARL_CORE_LOGGING);
-                int _size_1 = matchPeople.size();
-                String _plus = ("found: " + Integer.valueOf(_size_1));
+                int _size = matchPeople.size();
+                String _plus = ("found: " + Integer.valueOf(_size));
                 _$CAPACITY_USE$IO_SARL_CORE_LOGGING$CALLER_2.info(_plus);
+                int _carpoolingAgentsNumber = this.carpoolingAgentsNumber;
+                int _size_1 = matchPeople.size();
+                this.carpoolingAgentsNumber = (_carpoolingAgentsNumber + _size_1);
+                Logging _$CAPACITY_USE$IO_SARL_CORE_LOGGING$CALLER_3 = this.$castSkill(Logging.class, (this.$CAPACITY_USE$IO_SARL_CORE_LOGGING == null || this.$CAPACITY_USE$IO_SARL_CORE_LOGGING.get() == null) ? (this.$CAPACITY_USE$IO_SARL_CORE_LOGGING = this.$getSkill(Logging.class)) : this.$CAPACITY_USE$IO_SARL_CORE_LOGGING);
+                _$CAPACITY_USE$IO_SARL_CORE_LOGGING$CALLER_3.info(("% of people using carpooling: " + Double.valueOf((100 * (((double) this.carpoolingAgentsNumber) / this.agentNumber)))));
                 matchesToErase.addAll(matchPeople);
                 for (final SingleProposition mp : matchPeople) {
                   {
@@ -114,7 +119,7 @@ public class MatchSystem extends Agent {
           this.matches.removeAll(matchesToErase);
         }
       };
-      _$CAPACITY_USE$IO_SARL_CORE_SCHEDULES$CALLER_2.every(waitTask, 1000, _function_1);
+      _$CAPACITY_USE$IO_SARL_CORE_SCHEDULES$CALLER_2.every(waitTask, 100, _function_1);
     };
     _$CAPACITY_USE$IO_SARL_CORE_SCHEDULES$CALLER.in(10000, _function);
   }
@@ -130,7 +135,7 @@ public class MatchSystem extends Agent {
     _$CAPACITY_USE$IO_SARL_CORE_LOGGING$CALLER.info(_plus_2);
     synchronized (this) {
       Address _source = occurrence.getSource();
-      SingleProposition _singleProposition = new SingleProposition(_source, occurrence.startLocation, occurrence.destination);
+      SingleProposition _singleProposition = new SingleProposition(_source, occurrence.startLocation, occurrence.destination, occurrence.personalData);
       this.matches.add(_singleProposition);
     }
   }
@@ -316,6 +321,17 @@ public class MatchSystem extends Agent {
   @Pure
   @SyntheticMember
   public boolean equals(final Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    MatchSystem other = (MatchSystem) obj;
+    if (other.agentNumber != this.agentNumber)
+      return false;
+    if (other.carpoolingAgentsNumber != this.carpoolingAgentsNumber)
+      return false;
     return super.equals(obj);
   }
   
@@ -324,6 +340,9 @@ public class MatchSystem extends Agent {
   @SyntheticMember
   public int hashCode() {
     int result = super.hashCode();
+    final int prime = 31;
+    result = prime * result + this.agentNumber;
+    result = prime * result + this.carpoolingAgentsNumber;
     return result;
   }
   

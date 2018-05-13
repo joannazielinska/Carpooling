@@ -5,6 +5,8 @@ import carpooling.Map;
 import carpooling.Match;
 import carpooling.MatchStart;
 import carpooling.Matched;
+import carpooling.PersonInformation;
+import carpooling.PersonRequirements;
 import carpooling.Sex;
 import io.sarl.core.AgentKilled;
 import io.sarl.core.AgentSpawned;
@@ -38,24 +40,13 @@ import org.eclipse.xtext.xbase.lib.Extension;
 import org.eclipse.xtext.xbase.lib.Inline;
 import org.eclipse.xtext.xbase.lib.Pure;
 
-/**
- * @author Professional
- */
 @SarlSpecification("0.7")
 @SarlElementType(18)
 @SuppressWarnings("all")
 public class Person extends Agent {
-  private int age;
+  private PersonInformation personalData;
   
-  private Sex sex;
-  
-  private boolean hasDriverLicense;
-  
-  private boolean hasCar;
-  
-  private Location location;
-  
-  private double ownCash;
+  private PersonRequirements requirements;
   
   private final Random random = new Random();
   
@@ -70,20 +61,25 @@ public class Person extends Agent {
     Logging _$CAPACITY_USE$IO_SARL_CORE_LOGGING$CALLER = this.$castSkill(Logging.class, (this.$CAPACITY_USE$IO_SARL_CORE_LOGGING == null || this.$CAPACITY_USE$IO_SARL_CORE_LOGGING.get() == null) ? (this.$CAPACITY_USE$IO_SARL_CORE_LOGGING = this.$getSkill(Logging.class)) : this.$CAPACITY_USE$IO_SARL_CORE_LOGGING);
     _$CAPACITY_USE$IO_SARL_CORE_LOGGING$CALLER.info("The person has been created.");
     int _nextInt = this.random.nextInt(((this.max - this.min) + 1));
-    int _plus = (_nextInt + this.min);
-    this.age = _plus;
+    int age = (_nextInt + this.min);
     this.enums = Sex.values();
-    this.sex = this.enums[this.random.nextInt(2)];
-    this.hasDriverLicense = this.random.nextBoolean();
-    this.hasCar = this.random.nextBoolean();
-    this.location = Map.cities.get(this.random.nextInt(Map.cities.size()));
+    Sex sex = this.enums[this.random.nextInt(2)];
+    boolean hasDriverLicense = this.random.nextBoolean();
+    boolean hasCar = this.random.nextBoolean();
+    Location location = Map.cities.get(this.random.nextInt(Map.cities.size()));
     int _nextInt_1 = this.random.nextInt(50);
-    int _plus_1 = (_nextInt_1 + 50);
-    this.ownCash = _plus_1;
+    double ownCash = (_nextInt_1 + ((double) 50));
+    PersonInformation _personInformation = new PersonInformation(age, sex, hasDriverLicense, hasCar, location, ownCash);
+    this.personalData = _personInformation;
+    boolean _nextBoolean = this.random.nextBoolean();
+    boolean _nextBoolean_1 = this.random.nextBoolean();
+    boolean _nextBoolean_2 = this.random.nextBoolean();
+    PersonRequirements _personRequirements = new PersonRequirements(_nextBoolean, _nextBoolean_1, _nextBoolean_2);
+    this.requirements = _personRequirements;
     Logging _$CAPACITY_USE$IO_SARL_CORE_LOGGING$CALLER_1 = this.$castSkill(Logging.class, (this.$CAPACITY_USE$IO_SARL_CORE_LOGGING == null || this.$CAPACITY_USE$IO_SARL_CORE_LOGGING.get() == null) ? (this.$CAPACITY_USE$IO_SARL_CORE_LOGGING = this.$getSkill(Logging.class)) : this.$CAPACITY_USE$IO_SARL_CORE_LOGGING);
     _$CAPACITY_USE$IO_SARL_CORE_LOGGING$CALLER_1.info("Person\'s data:");
     Logging _$CAPACITY_USE$IO_SARL_CORE_LOGGING$CALLER_2 = this.$castSkill(Logging.class, (this.$CAPACITY_USE$IO_SARL_CORE_LOGGING == null || this.$CAPACITY_USE$IO_SARL_CORE_LOGGING.get() == null) ? (this.$CAPACITY_USE$IO_SARL_CORE_LOGGING = this.$getSkill(Logging.class)) : this.$CAPACITY_USE$IO_SARL_CORE_LOGGING);
-    _$CAPACITY_USE$IO_SARL_CORE_LOGGING$CALLER_2.info(this.location.getLocationName());
+    _$CAPACITY_USE$IO_SARL_CORE_LOGGING$CALLER_2.info(location.getLocationName());
   }
   
   @SyntheticMember
@@ -93,15 +89,16 @@ public class Person extends Agent {
     Scope<Address> superScope = Scopes.addresses(_$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS$CALLER.getDefaultSpace().getAddress(_$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS$CALLER_1.getDefaultContext().getID()));
     int destinationIndex = this.random.nextInt(Map.cities.size());
     DefaultContextInteractions _$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS$CALLER_2 = this.$castSkill(DefaultContextInteractions.class, (this.$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS == null || this.$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS.get() == null) ? (this.$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS = this.$getSkill(DefaultContextInteractions.class)) : this.$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS);
+    Location _location = this.personalData.getLocation();
     Location _get = Map.cities.get(destinationIndex);
-    Match _match = new Match(this.location, _get);
+    Match _match = new Match(this.personalData, _location, _get);
     _$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS$CALLER_2.emit(_match, superScope);
   }
   
   @SyntheticMember
   private void $behaviorUnit$Matched$2(final Matched occurrence) {
     Logging _$CAPACITY_USE$IO_SARL_CORE_LOGGING$CALLER = this.$castSkill(Logging.class, (this.$CAPACITY_USE$IO_SARL_CORE_LOGGING == null || this.$CAPACITY_USE$IO_SARL_CORE_LOGGING.get() == null) ? (this.$CAPACITY_USE$IO_SARL_CORE_LOGGING = this.$getSkill(Logging.class)) : this.$CAPACITY_USE$IO_SARL_CORE_LOGGING);
-    String _locationName = this.location.getLocationName();
+    String _locationName = this.personalData.getLocation().getLocationName();
     String _plus = ("My location: " + _locationName);
     String _plus_1 = (_plus + " SR: ");
     String _locationName_1 = occurrence.startLocation.getLocationName();
@@ -109,7 +106,14 @@ public class Person extends Agent {
     String _plus_3 = (_plus_2 + " ");
     String _locationName_2 = occurrence.destination.getLocationName();
     String _plus_4 = (_plus_3 + _locationName_2);
-    _$CAPACITY_USE$IO_SARL_CORE_LOGGING$CALLER.info(_plus_4);
+    String _plus_5 = (_plus_4 + 
+      " ");
+    boolean _isHasDriverLicense = this.personalData.isHasDriverLicense();
+    String _plus_6 = (_plus_5 + Boolean.valueOf(_isHasDriverLicense));
+    String _plus_7 = (_plus_6 + " ");
+    boolean _isHasCar = this.personalData.isHasCar();
+    String _plus_8 = (_plus_7 + Boolean.valueOf(_isHasCar));
+    _$CAPACITY_USE$IO_SARL_CORE_LOGGING$CALLER.info(_plus_8);
   }
   
   @SyntheticMember
@@ -278,14 +282,6 @@ public class Person extends Agent {
     if (getClass() != obj.getClass())
       return false;
     Person other = (Person) obj;
-    if (other.age != this.age)
-      return false;
-    if (other.hasDriverLicense != this.hasDriverLicense)
-      return false;
-    if (other.hasCar != this.hasCar)
-      return false;
-    if (Double.doubleToLongBits(other.ownCash) != Double.doubleToLongBits(this.ownCash))
-      return false;
     if (other.max != this.max)
       return false;
     if (other.min != this.min)
@@ -299,10 +295,6 @@ public class Person extends Agent {
   public int hashCode() {
     int result = super.hashCode();
     final int prime = 31;
-    result = prime * result + this.age;
-    result = prime * result + (this.hasDriverLicense ? 1231 : 1237);
-    result = prime * result + (this.hasCar ? 1231 : 1237);
-    result = prime * result + (int) (Double.doubleToLongBits(this.ownCash) ^ (Double.doubleToLongBits(this.ownCash) >>> 32));
     result = prime * result + this.max;
     result = prime * result + this.min;
     return result;

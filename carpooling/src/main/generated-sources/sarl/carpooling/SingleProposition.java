@@ -1,6 +1,7 @@
 package carpooling;
 
 import carpooling.Location;
+import carpooling.PersonInformation;
 import io.sarl.lang.annotation.SarlElementType;
 import io.sarl.lang.annotation.SarlSpecification;
 import io.sarl.lang.annotation.SyntheticMember;
@@ -17,10 +18,13 @@ public class SingleProposition {
   
   public Location destination;
   
-  public SingleProposition(final Address who, final Location startLocation, final Location destination) {
+  public PersonInformation personalData;
+  
+  public SingleProposition(final Address who, final Location startLocation, final Location destination, final PersonInformation personalData) {
     this.who = who;
     this.startLocation = startLocation;
     this.destination = destination;
+    this.personalData = personalData;
   }
   
   @Override

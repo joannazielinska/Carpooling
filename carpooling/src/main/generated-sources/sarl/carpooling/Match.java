@@ -1,6 +1,7 @@
 package carpooling;
 
 import carpooling.Location;
+import carpooling.PersonInformation;
 import io.sarl.lang.annotation.SarlElementType;
 import io.sarl.lang.annotation.SarlSpecification;
 import io.sarl.lang.annotation.SyntheticMember;
@@ -16,9 +17,12 @@ public class Match extends Event {
   
   public final Location destination;
   
-  public Match(final Location startLocation, final Location destination) {
+  public final PersonInformation personalData;
+  
+  public Match(final PersonInformation personalData, final Location startLocation, final Location destination) {
     this.startLocation = startLocation;
     this.destination = destination;
+    this.personalData = personalData;
   }
   
   @Override
@@ -45,8 +49,6 @@ public class Match extends Event {
     super.toString(builder);
     builder.add("startLocation", this.startLocation);
     builder.add("destination", this.destination);
+    builder.add("personalData", this.personalData);
   }
-  
-  @SyntheticMember
-  private final static long serialVersionUID = -782348278L;
 }

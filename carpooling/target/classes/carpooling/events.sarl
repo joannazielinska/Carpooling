@@ -6,11 +6,13 @@ import java.util.ArrayList
 event Match {
 	val startLocation : Location
 	val destination : Location
+	val personalData : PersonInformation
 	
 
-	new(startLocation : Location, destination : Location) {
+	new(personalData : PersonInformation, startLocation : Location, destination : Location) {
 		this.startLocation = startLocation
 		this.destination = destination
+		this.personalData = personalData
 	}
 }
 

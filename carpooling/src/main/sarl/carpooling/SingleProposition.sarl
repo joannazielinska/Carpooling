@@ -8,11 +8,13 @@ class SingleProposition {
 	public var who : Address
 	public var startLocation : Location
 	public var destination : Location
+	public var personalData : PersonInformation
 	
-	public new(who : Address, startLocation : Location, destination : Location)
+	public new(who : Address, startLocation : Location, destination : Location, personalData : PersonInformation)
 	{
 		this.who = who
 		this.startLocation = startLocation
 		this.destination = destination
+		this.personalData = personalData
 	}
 }
