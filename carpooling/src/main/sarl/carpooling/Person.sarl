@@ -13,15 +13,16 @@ import io.sarl.core.Lifecycle
 import java.util.Random
 import io.sarl.core.DefaultContextInteractions
 import io.sarl.util.Scopes
-
-
+import java.util.ArrayList
 
 agent Person {
+
 	uses DefaultContextInteractions, Lifecycle, Logging
 
 	var personalData : PersonInformation
 	var requirements : PersonRequirements
-
+	var amountOfMessage : int
+	var answers : ArrayList<NegotiationAnswer>
 	val random = new Random()
 	var max = 80
 	var min = 18
@@ -34,12 +35,20 @@ agent Person {
 		var age = random.nextInt((max - min) + 1) + min
 		enums = Sex.values()
 		var sex = enums.get(random.nextInt(2))
-		var hasDriverLicense = random.nextBoolean()
+		var isDriver = random.nextInt(3)
+		var price = random.nextInt(3)+1;
+		if(isDriver == 1){
+			price+=1;
+		}
+		amountOfMessage = 0;
+		answers = new ArrayList<NegotiationAnswer>()
 		var hasCar = random.nextBoolean()
+		var minimalPassagerAmount = random.nextInt(3)+2;
 		var location = Map.cities.get(random.nextInt(Map.cities.size()))
 		var ownCash = random.nextInt(50)+50 as double
-		personalData = new PersonInformation(age, sex, hasDriverLicense, hasCar, location, ownCash)
-		requirements = new PersonRequirements(random.nextBoolean(), random.nextBoolean(), random.nextBoolean())
+		personalData = new PersonInformation(age, sex, isDriver, hasCar, location, ownCash)
+		requirements = new PersonRequirements(random.nextBoolean(), random.nextBoolean(), random.nextBoolean(),
+			minimalPassagerAmount , price)
 		info("Person's data:")
 		info(location.getLocationName())
 		
@@ -54,13 +63,115 @@ agent Person {
 	
 	on Matched
 	{
-		info("My location: " + personalData.getLocation().getLocationName() + " SR: " + 
-			occurrence.startLocation.getLocationName() + " " + occurrence.destination.getLocationName() +
-			" " + personalData.isHasDriverLicense() + " " + personalData.isHasCar()
-		)
+		synchronized (this) {
+			info("My location: " + personalData.getLocation().getLocationName() + " SR: " + 
+				occurrence.startLocation.getLocationName() + " " + occurrence.destination.getLocationName() +
+				" " + personalData.isHeDriver + " " + personalData.isHasCar()
+			)
+			
+			if (personalData.isHeDriver == 1) {
+				amountOfMessage = occurrence.others.size();
+				for (passenger : occurrence.others) {
+					emit(new Negotiate(personalData, requirements))[it == passenger]	
+				}
+					
+			}
+		
+		}
 	}
 	
-
+	on Negotiate {
+		synchronized (this) {
+				//check cost
+				if (occurrence.driverReq.getPrice() <= requirements.getPrice()) {
+					emit(new NegotiationAnswer(true, requirements))[it == occurrence.source]
+				
+				} 
+				else {
+					emit(new NegotiationAnswer(false, requirements))[it == occurrence.source]
+				}
+				//check sth more
+		}
+	}
+	
+	
+	on NegotiationAnswer {
+		synchronized (this) {
+			
+				amountOfMessage--;
+				//answers = new ArrayList<NegotiationAnswer>()
+				answers.add(occurrence);
+			
+				
+			if(amountOfMessage == 0){
+					
+					//info("dostalismy wszystkie wiadomosci " + occurrence)
+					var akceptedPassengers = new ArrayList<NegotiationAnswer>()
+					var negotiations = new ArrayList<NegotiationAnswer>()
+					var rejectedPassengers = new ArrayList<NegotiationAnswer>()
+					for(message : answers){
+						if (message.answer == true && akceptedPassengers.size() < 5) {
+						
+								akceptedPassengers.add(message);
+							}
+						
+						else {
+								negotiations.add(message)
+								
+						}
+					}
+				// jesli <5 dodaj z listy odrzuconych 
+				
+					if (akceptedPassengers.size() < 5 && requirements.getMinimalPassagerAmount() >= akceptedPassengers.size())
+					{
+							for (message : negotiations) {
+								if (akceptedPassengers.size() < 5 &&
+							message.passengerReq.getPrice() >= (requirements.getPrice() - requirements.getDiscount())) {
+										akceptedPassengers.add(message);
+										
+								} 
+								else {
+										rejectedPassengers.add(message);
+								}
+							}
+					}
+					// odeslij wszystkie wiadomosci
+				if (requirements.getMinimalPassagerAmount() <= akceptedPassengers.size()) {
+						for (message : akceptedPassengers) {
+							emit(new AnnounceDecision(true))[it == message.source]
+						
+							
+						}
+						for (message : rejectedPassengers) {
+							emit(new AnnounceDecision(false))[it == message.source]
+						}
+					info("Negotiation successful")
+					
+				}
+				else {
+						for (message : akceptedPassengers) {
+							emit(new AnnounceDecision(false))[it == message.source]
+	
+						}
+						for (message : rejectedPassengers) {
+							emit(new AnnounceDecision(false))[it == message.source]
+						}
+					info("Negotiation failed")
+				}	
+			}
+		}
+	}
+	
+	on AnnounceDecision{
+		if(occurrence.answer){
+			info("trip accepted ")
+		}
+		else {
+			info("trip rejected")
+		}
+	}
+		
+	
 	on Destroy {
 		// Event trigger when the agent is destroyed from the system.
 		// You should put all the resource releasing statements in this block of code.

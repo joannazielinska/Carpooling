@@ -3,16 +3,17 @@ package carpooling;
 public class PersonInformation {
 	private int age;
 	private Sex sex;
-	private boolean hasDriverLicense;
+	private int isDriver;
 	private boolean hasCar;
 	private Location location;
 	private double ownCash;
 	
-	public PersonInformation(int age, Sex sex, boolean driverLicense, boolean hasCar, Location location, double cash)
+	
+	public PersonInformation(int age, Sex sex, int driver, boolean hasCar, Location location, double cash)
 	{
 		this.age = age;
 		this.sex = sex;
-		this.hasDriverLicense = driverLicense;
+		this.isDriver = driver;
 		this.hasCar = hasCar;
 		this.location = location;
 		this.ownCash = cash;
@@ -26,8 +27,8 @@ public class PersonInformation {
 		return sex;
 	}
 
-	public boolean isHasDriverLicense() {
-		return hasDriverLicense;
+	public int isHeDriver() {
+		return isDriver;
 	}
 
 	public boolean isHasCar() {

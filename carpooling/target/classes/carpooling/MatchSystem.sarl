@@ -1,3 +1,4 @@
+
 package carpooling
 
 import io.sarl.core.AgentKilled
@@ -39,10 +40,10 @@ agent MatchSystem {
 		matches = new ArrayList<SingleProposition>()
 		wake(new MatchStart())
 		
-		in(10000) [
+		in(10) [
 			val waitTask = task("wait-task")
 			var matchesToErase = new ArrayList<SingleProposition>()
-			waitTask.every(100) [
+			waitTask.every(1000) [
 				synchronized (this) 
 				{
 					for(match : matches)
@@ -52,7 +53,7 @@ agent MatchSystem {
 						{
 							info("found: " + matchPeople.size())
 							carpoolingAgentsNumber += matchPeople.size()
-							info("% of people using carpooling: " + 100 * ((carpoolingAgentsNumber as double)/agentNumber))
+							info("% of people matched: " + 100 * ((carpoolingAgentsNumber as double)/agentNumber))
 							matchesToErase.addAll(matchPeople)
 							for(mp : matchPeople)
 							{
@@ -68,13 +69,14 @@ agent MatchSystem {
 						}
 					}
 					matches.removeAll(matchesToErase)
+					
 				}
 			]
 		]
 	}
 
 	on Match {
-		info("Receiving S D: " + occurrence.startLocation.getLocationName() + " " + occurrence.destination.getLocationName())
+		info("Receiving  S D: " + occurrence.startLocation.getLocationName() + " " + occurrence.destination.getLocationName())
 		synchronized (this) {
 			matches.add(new SingleProposition(occurrence.source, occurrence.startLocation, occurrence.destination, occurrence.personalData))
 		}

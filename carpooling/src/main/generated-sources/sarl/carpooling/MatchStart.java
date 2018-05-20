@@ -19,4 +19,7 @@ public class MatchStart extends Event {
   public MatchStart(final Address source) {
     super(source);
   }
+  
+  @SyntheticMember
+  private final static long serialVersionUID = 588368462L;
 }

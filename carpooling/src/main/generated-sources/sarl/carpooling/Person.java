@@ -1,13 +1,17 @@
 package carpooling;
 
+import carpooling.AnnounceDecision;
 import carpooling.Location;
 import carpooling.Map;
 import carpooling.Match;
 import carpooling.MatchStart;
 import carpooling.Matched;
+import carpooling.Negotiate;
+import carpooling.NegotiationAnswer;
 import carpooling.PersonInformation;
 import carpooling.PersonRequirements;
 import carpooling.Sex;
+import com.google.common.base.Objects;
 import io.sarl.core.AgentKilled;
 import io.sarl.core.AgentSpawned;
 import io.sarl.core.ContextJoined;
@@ -32,6 +36,7 @@ import io.sarl.lang.core.Scope;
 import io.sarl.lang.core.Skill;
 import io.sarl.lang.util.ClearableReference;
 import io.sarl.util.Scopes;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Random;
 import java.util.UUID;
@@ -47,6 +52,10 @@ public class Person extends Agent {
   private PersonInformation personalData;
   
   private PersonRequirements requirements;
+  
+  private int amountOfMessage;
+  
+  private ArrayList<NegotiationAnswer> answers;
   
   private final Random random = new Random();
   
@@ -64,17 +73,28 @@ public class Person extends Agent {
     int age = (_nextInt + this.min);
     this.enums = Sex.values();
     Sex sex = this.enums[this.random.nextInt(2)];
-    boolean hasDriverLicense = this.random.nextBoolean();
+    int isDriver = this.random.nextInt(3);
+    int _nextInt_1 = this.random.nextInt(3);
+    int price = (_nextInt_1 + 1);
+    if ((isDriver == 1)) {
+      int _price = price;
+      price = (_price + 1);
+    }
+    this.amountOfMessage = 0;
+    ArrayList<NegotiationAnswer> _arrayList = new ArrayList<NegotiationAnswer>();
+    this.answers = _arrayList;
     boolean hasCar = this.random.nextBoolean();
+    int _nextInt_2 = this.random.nextInt(3);
+    int minimalPassagerAmount = (_nextInt_2 + 2);
     Location location = Map.cities.get(this.random.nextInt(Map.cities.size()));
-    int _nextInt_1 = this.random.nextInt(50);
-    double ownCash = (_nextInt_1 + ((double) 50));
-    PersonInformation _personInformation = new PersonInformation(age, sex, hasDriverLicense, hasCar, location, ownCash);
+    int _nextInt_3 = this.random.nextInt(50);
+    double ownCash = (_nextInt_3 + ((double) 50));
+    PersonInformation _personInformation = new PersonInformation(age, sex, isDriver, hasCar, location, ownCash);
     this.personalData = _personInformation;
     boolean _nextBoolean = this.random.nextBoolean();
     boolean _nextBoolean_1 = this.random.nextBoolean();
     boolean _nextBoolean_2 = this.random.nextBoolean();
-    PersonRequirements _personRequirements = new PersonRequirements(_nextBoolean, _nextBoolean_1, _nextBoolean_2);
+    PersonRequirements _personRequirements = new PersonRequirements(_nextBoolean, _nextBoolean_1, _nextBoolean_2, minimalPassagerAmount, price);
     this.requirements = _personRequirements;
     Logging _$CAPACITY_USE$IO_SARL_CORE_LOGGING$CALLER_1 = this.$castSkill(Logging.class, (this.$CAPACITY_USE$IO_SARL_CORE_LOGGING == null || this.$CAPACITY_USE$IO_SARL_CORE_LOGGING.get() == null) ? (this.$CAPACITY_USE$IO_SARL_CORE_LOGGING = this.$getSkill(Logging.class)) : this.$CAPACITY_USE$IO_SARL_CORE_LOGGING);
     _$CAPACITY_USE$IO_SARL_CORE_LOGGING$CALLER_1.info("Person\'s data:");
@@ -97,53 +117,181 @@ public class Person extends Agent {
   
   @SyntheticMember
   private void $behaviorUnit$Matched$2(final Matched occurrence) {
-    Logging _$CAPACITY_USE$IO_SARL_CORE_LOGGING$CALLER = this.$castSkill(Logging.class, (this.$CAPACITY_USE$IO_SARL_CORE_LOGGING == null || this.$CAPACITY_USE$IO_SARL_CORE_LOGGING.get() == null) ? (this.$CAPACITY_USE$IO_SARL_CORE_LOGGING = this.$getSkill(Logging.class)) : this.$CAPACITY_USE$IO_SARL_CORE_LOGGING);
-    String _locationName = this.personalData.getLocation().getLocationName();
-    String _plus = ("My location: " + _locationName);
-    String _plus_1 = (_plus + " SR: ");
-    String _locationName_1 = occurrence.startLocation.getLocationName();
-    String _plus_2 = (_plus_1 + _locationName_1);
-    String _plus_3 = (_plus_2 + " ");
-    String _locationName_2 = occurrence.destination.getLocationName();
-    String _plus_4 = (_plus_3 + _locationName_2);
-    String _plus_5 = (_plus_4 + 
-      " ");
-    boolean _isHasDriverLicense = this.personalData.isHasDriverLicense();
-    String _plus_6 = (_plus_5 + Boolean.valueOf(_isHasDriverLicense));
-    String _plus_7 = (_plus_6 + " ");
-    boolean _isHasCar = this.personalData.isHasCar();
-    String _plus_8 = (_plus_7 + Boolean.valueOf(_isHasCar));
-    _$CAPACITY_USE$IO_SARL_CORE_LOGGING$CALLER.info(_plus_8);
+    synchronized (this) {
+      Logging _$CAPACITY_USE$IO_SARL_CORE_LOGGING$CALLER = this.$castSkill(Logging.class, (this.$CAPACITY_USE$IO_SARL_CORE_LOGGING == null || this.$CAPACITY_USE$IO_SARL_CORE_LOGGING.get() == null) ? (this.$CAPACITY_USE$IO_SARL_CORE_LOGGING = this.$getSkill(Logging.class)) : this.$CAPACITY_USE$IO_SARL_CORE_LOGGING);
+      String _locationName = this.personalData.getLocation().getLocationName();
+      String _plus = ("My location: " + _locationName);
+      String _plus_1 = (_plus + " SR: ");
+      String _locationName_1 = occurrence.startLocation.getLocationName();
+      String _plus_2 = (_plus_1 + _locationName_1);
+      String _plus_3 = (_plus_2 + " ");
+      String _locationName_2 = occurrence.destination.getLocationName();
+      String _plus_4 = (_plus_3 + _locationName_2);
+      String _plus_5 = (_plus_4 + 
+        " ");
+      int _isHeDriver = this.personalData.isHeDriver();
+      String _plus_6 = (_plus_5 + Integer.valueOf(_isHeDriver));
+      String _plus_7 = (_plus_6 + " ");
+      boolean _isHasCar = this.personalData.isHasCar();
+      String _plus_8 = (_plus_7 + Boolean.valueOf(_isHasCar));
+      _$CAPACITY_USE$IO_SARL_CORE_LOGGING$CALLER.info(_plus_8);
+      int _isHeDriver_1 = this.personalData.isHeDriver();
+      boolean _equals = (_isHeDriver_1 == 1);
+      if (_equals) {
+        this.amountOfMessage = occurrence.others.size();
+        for (final Address passenger : occurrence.others) {
+          DefaultContextInteractions _$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS$CALLER = this.$castSkill(DefaultContextInteractions.class, (this.$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS == null || this.$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS.get() == null) ? (this.$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS = this.$getSkill(DefaultContextInteractions.class)) : this.$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS);
+          Negotiate _negotiate = new Negotiate(this.personalData, this.requirements);
+          final Scope<Address> _function = (Address it) -> {
+            return Objects.equal(it, passenger);
+          };
+          _$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS$CALLER.emit(_negotiate, _function);
+        }
+      }
+    }
   }
   
   @SyntheticMember
-  private void $behaviorUnit$Destroy$3(final Destroy occurrence) {
+  private void $behaviorUnit$Negotiate$3(final Negotiate occurrence) {
+    synchronized (this) {
+      int _price = occurrence.driverReq.getPrice();
+      int _price_1 = this.requirements.getPrice();
+      boolean _lessEqualsThan = (_price <= _price_1);
+      if (_lessEqualsThan) {
+        DefaultContextInteractions _$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS$CALLER = this.$castSkill(DefaultContextInteractions.class, (this.$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS == null || this.$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS.get() == null) ? (this.$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS = this.$getSkill(DefaultContextInteractions.class)) : this.$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS);
+        NegotiationAnswer _negotiationAnswer = new NegotiationAnswer(true, this.requirements);
+        final Scope<Address> _function = (Address it) -> {
+          Address _source = occurrence.getSource();
+          return Objects.equal(it, _source);
+        };
+        _$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS$CALLER.emit(_negotiationAnswer, _function);
+      } else {
+        DefaultContextInteractions _$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS$CALLER_1 = this.$castSkill(DefaultContextInteractions.class, (this.$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS == null || this.$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS.get() == null) ? (this.$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS = this.$getSkill(DefaultContextInteractions.class)) : this.$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS);
+        NegotiationAnswer _negotiationAnswer_1 = new NegotiationAnswer(false, this.requirements);
+        final Scope<Address> _function_1 = (Address it) -> {
+          Address _source = occurrence.getSource();
+          return Objects.equal(it, _source);
+        };
+        _$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS$CALLER_1.emit(_negotiationAnswer_1, _function_1);
+      }
+    }
+  }
+  
+  @SyntheticMember
+  private void $behaviorUnit$NegotiationAnswer$4(final NegotiationAnswer occurrence) {
+    synchronized (this) {
+      this.amountOfMessage--;
+      this.answers.add(occurrence);
+      if ((this.amountOfMessage == 0)) {
+        ArrayList<NegotiationAnswer> akceptedPassengers = new ArrayList<NegotiationAnswer>();
+        ArrayList<NegotiationAnswer> negotiations = new ArrayList<NegotiationAnswer>();
+        ArrayList<NegotiationAnswer> rejectedPassengers = new ArrayList<NegotiationAnswer>();
+        for (final NegotiationAnswer message : this.answers) {
+          if (((message.answer == true) && (akceptedPassengers.size() < 5))) {
+            akceptedPassengers.add(message);
+          } else {
+            negotiations.add(message);
+          }
+        }
+        if (((akceptedPassengers.size() < 5) && (this.requirements.getMinimalPassagerAmount() >= akceptedPassengers.size()))) {
+          for (final NegotiationAnswer message_1 : negotiations) {
+            if (((akceptedPassengers.size() < 5) && 
+              (message_1.passengerReq.getPrice() >= (this.requirements.getPrice() - this.requirements.getDiscount())))) {
+              akceptedPassengers.add(message_1);
+            } else {
+              rejectedPassengers.add(message_1);
+            }
+          }
+        }
+        int _minimalPassagerAmount = this.requirements.getMinimalPassagerAmount();
+        int _size = akceptedPassengers.size();
+        boolean _lessEqualsThan = (_minimalPassagerAmount <= _size);
+        if (_lessEqualsThan) {
+          for (final NegotiationAnswer message_2 : akceptedPassengers) {
+            DefaultContextInteractions _$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS$CALLER = this.$castSkill(DefaultContextInteractions.class, (this.$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS == null || this.$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS.get() == null) ? (this.$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS = this.$getSkill(DefaultContextInteractions.class)) : this.$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS);
+            AnnounceDecision _announceDecision = new AnnounceDecision(true);
+            final Scope<Address> _function = (Address it) -> {
+              Address _source = message_2.getSource();
+              return Objects.equal(it, _source);
+            };
+            _$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS$CALLER.emit(_announceDecision, _function);
+          }
+          for (final NegotiationAnswer message_3 : rejectedPassengers) {
+            DefaultContextInteractions _$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS$CALLER_1 = this.$castSkill(DefaultContextInteractions.class, (this.$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS == null || this.$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS.get() == null) ? (this.$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS = this.$getSkill(DefaultContextInteractions.class)) : this.$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS);
+            AnnounceDecision _announceDecision_1 = new AnnounceDecision(false);
+            final Scope<Address> _function_1 = (Address it) -> {
+              Address _source = message_3.getSource();
+              return Objects.equal(it, _source);
+            };
+            _$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS$CALLER_1.emit(_announceDecision_1, _function_1);
+          }
+          Logging _$CAPACITY_USE$IO_SARL_CORE_LOGGING$CALLER = this.$castSkill(Logging.class, (this.$CAPACITY_USE$IO_SARL_CORE_LOGGING == null || this.$CAPACITY_USE$IO_SARL_CORE_LOGGING.get() == null) ? (this.$CAPACITY_USE$IO_SARL_CORE_LOGGING = this.$getSkill(Logging.class)) : this.$CAPACITY_USE$IO_SARL_CORE_LOGGING);
+          _$CAPACITY_USE$IO_SARL_CORE_LOGGING$CALLER.info("Negotiation successful");
+        } else {
+          for (final NegotiationAnswer message_4 : akceptedPassengers) {
+            DefaultContextInteractions _$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS$CALLER_2 = this.$castSkill(DefaultContextInteractions.class, (this.$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS == null || this.$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS.get() == null) ? (this.$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS = this.$getSkill(DefaultContextInteractions.class)) : this.$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS);
+            AnnounceDecision _announceDecision_2 = new AnnounceDecision(false);
+            final Scope<Address> _function_2 = (Address it) -> {
+              Address _source = message_4.getSource();
+              return Objects.equal(it, _source);
+            };
+            _$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS$CALLER_2.emit(_announceDecision_2, _function_2);
+          }
+          for (final NegotiationAnswer message_5 : rejectedPassengers) {
+            DefaultContextInteractions _$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS$CALLER_3 = this.$castSkill(DefaultContextInteractions.class, (this.$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS == null || this.$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS.get() == null) ? (this.$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS = this.$getSkill(DefaultContextInteractions.class)) : this.$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS);
+            AnnounceDecision _announceDecision_3 = new AnnounceDecision(false);
+            final Scope<Address> _function_3 = (Address it) -> {
+              Address _source = message_5.getSource();
+              return Objects.equal(it, _source);
+            };
+            _$CAPACITY_USE$IO_SARL_CORE_DEFAULTCONTEXTINTERACTIONS$CALLER_3.emit(_announceDecision_3, _function_3);
+          }
+          Logging _$CAPACITY_USE$IO_SARL_CORE_LOGGING$CALLER_1 = this.$castSkill(Logging.class, (this.$CAPACITY_USE$IO_SARL_CORE_LOGGING == null || this.$CAPACITY_USE$IO_SARL_CORE_LOGGING.get() == null) ? (this.$CAPACITY_USE$IO_SARL_CORE_LOGGING = this.$getSkill(Logging.class)) : this.$CAPACITY_USE$IO_SARL_CORE_LOGGING);
+          _$CAPACITY_USE$IO_SARL_CORE_LOGGING$CALLER_1.info("Negotiation failed");
+        }
+      }
+    }
+  }
+  
+  @SyntheticMember
+  private void $behaviorUnit$AnnounceDecision$5(final AnnounceDecision occurrence) {
+    if (occurrence.answer) {
+      Logging _$CAPACITY_USE$IO_SARL_CORE_LOGGING$CALLER = this.$castSkill(Logging.class, (this.$CAPACITY_USE$IO_SARL_CORE_LOGGING == null || this.$CAPACITY_USE$IO_SARL_CORE_LOGGING.get() == null) ? (this.$CAPACITY_USE$IO_SARL_CORE_LOGGING = this.$getSkill(Logging.class)) : this.$CAPACITY_USE$IO_SARL_CORE_LOGGING);
+      _$CAPACITY_USE$IO_SARL_CORE_LOGGING$CALLER.info("trip accepted ");
+    } else {
+      Logging _$CAPACITY_USE$IO_SARL_CORE_LOGGING$CALLER_1 = this.$castSkill(Logging.class, (this.$CAPACITY_USE$IO_SARL_CORE_LOGGING == null || this.$CAPACITY_USE$IO_SARL_CORE_LOGGING.get() == null) ? (this.$CAPACITY_USE$IO_SARL_CORE_LOGGING = this.$getSkill(Logging.class)) : this.$CAPACITY_USE$IO_SARL_CORE_LOGGING);
+      _$CAPACITY_USE$IO_SARL_CORE_LOGGING$CALLER_1.info("trip rejected");
+    }
+  }
+  
+  @SyntheticMember
+  private void $behaviorUnit$Destroy$6(final Destroy occurrence) {
     Logging _$CAPACITY_USE$IO_SARL_CORE_LOGGING$CALLER = this.$castSkill(Logging.class, (this.$CAPACITY_USE$IO_SARL_CORE_LOGGING == null || this.$CAPACITY_USE$IO_SARL_CORE_LOGGING.get() == null) ? (this.$CAPACITY_USE$IO_SARL_CORE_LOGGING = this.$getSkill(Logging.class)) : this.$CAPACITY_USE$IO_SARL_CORE_LOGGING);
     _$CAPACITY_USE$IO_SARL_CORE_LOGGING$CALLER.info("The agent was stopped.");
   }
   
   @SyntheticMember
-  private void $behaviorUnit$AgentSpawned$4(final AgentSpawned occurrence) {
+  private void $behaviorUnit$AgentSpawned$7(final AgentSpawned occurrence) {
   }
   
   @SyntheticMember
-  private void $behaviorUnit$AgentKilled$5(final AgentKilled occurrence) {
+  private void $behaviorUnit$AgentKilled$8(final AgentKilled occurrence) {
   }
   
   @SyntheticMember
-  private void $behaviorUnit$ContextJoined$6(final ContextJoined occurrence) {
+  private void $behaviorUnit$ContextJoined$9(final ContextJoined occurrence) {
   }
   
   @SyntheticMember
-  private void $behaviorUnit$ContextLeft$7(final ContextLeft occurrence) {
+  private void $behaviorUnit$ContextLeft$10(final ContextLeft occurrence) {
   }
   
   @SyntheticMember
-  private void $behaviorUnit$MemberJoined$8(final MemberJoined occurrence) {
+  private void $behaviorUnit$MemberJoined$11(final MemberJoined occurrence) {
   }
   
   @SyntheticMember
-  private void $behaviorUnit$MemberLeft$9(final MemberLeft occurrence) {
+  private void $behaviorUnit$MemberLeft$12(final MemberLeft occurrence) {
   }
   
   @Extension
@@ -193,6 +341,38 @@ public class Person extends Agent {
   
   @SyntheticMember
   @PerceptGuardEvaluator
+  private void $guardEvaluator$MemberLeft(final MemberLeft occurrence, final Collection<Runnable> ___SARLlocal_runnableCollection) {
+    assert occurrence != null;
+    assert ___SARLlocal_runnableCollection != null;
+    ___SARLlocal_runnableCollection.add(() -> $behaviorUnit$MemberLeft$12(occurrence));
+  }
+  
+  @SyntheticMember
+  @PerceptGuardEvaluator
+  private void $guardEvaluator$AgentSpawned(final AgentSpawned occurrence, final Collection<Runnable> ___SARLlocal_runnableCollection) {
+    assert occurrence != null;
+    assert ___SARLlocal_runnableCollection != null;
+    ___SARLlocal_runnableCollection.add(() -> $behaviorUnit$AgentSpawned$7(occurrence));
+  }
+  
+  @SyntheticMember
+  @PerceptGuardEvaluator
+  private void $guardEvaluator$AgentKilled(final AgentKilled occurrence, final Collection<Runnable> ___SARLlocal_runnableCollection) {
+    assert occurrence != null;
+    assert ___SARLlocal_runnableCollection != null;
+    ___SARLlocal_runnableCollection.add(() -> $behaviorUnit$AgentKilled$8(occurrence));
+  }
+  
+  @SyntheticMember
+  @PerceptGuardEvaluator
+  private void $guardEvaluator$MemberJoined(final MemberJoined occurrence, final Collection<Runnable> ___SARLlocal_runnableCollection) {
+    assert occurrence != null;
+    assert ___SARLlocal_runnableCollection != null;
+    ___SARLlocal_runnableCollection.add(() -> $behaviorUnit$MemberJoined$11(occurrence));
+  }
+  
+  @SyntheticMember
+  @PerceptGuardEvaluator
   private void $guardEvaluator$Initialize(final Initialize occurrence, final Collection<Runnable> ___SARLlocal_runnableCollection) {
     assert occurrence != null;
     assert ___SARLlocal_runnableCollection != null;
@@ -212,7 +392,15 @@ public class Person extends Agent {
   private void $guardEvaluator$ContextLeft(final ContextLeft occurrence, final Collection<Runnable> ___SARLlocal_runnableCollection) {
     assert occurrence != null;
     assert ___SARLlocal_runnableCollection != null;
-    ___SARLlocal_runnableCollection.add(() -> $behaviorUnit$ContextLeft$7(occurrence));
+    ___SARLlocal_runnableCollection.add(() -> $behaviorUnit$ContextLeft$10(occurrence));
+  }
+  
+  @SyntheticMember
+  @PerceptGuardEvaluator
+  private void $guardEvaluator$AnnounceDecision(final AnnounceDecision occurrence, final Collection<Runnable> ___SARLlocal_runnableCollection) {
+    assert occurrence != null;
+    assert ___SARLlocal_runnableCollection != null;
+    ___SARLlocal_runnableCollection.add(() -> $behaviorUnit$AnnounceDecision$5(occurrence));
   }
   
   @SyntheticMember
@@ -220,23 +408,7 @@ public class Person extends Agent {
   private void $guardEvaluator$ContextJoined(final ContextJoined occurrence, final Collection<Runnable> ___SARLlocal_runnableCollection) {
     assert occurrence != null;
     assert ___SARLlocal_runnableCollection != null;
-    ___SARLlocal_runnableCollection.add(() -> $behaviorUnit$ContextJoined$6(occurrence));
-  }
-  
-  @SyntheticMember
-  @PerceptGuardEvaluator
-  private void $guardEvaluator$MemberLeft(final MemberLeft occurrence, final Collection<Runnable> ___SARLlocal_runnableCollection) {
-    assert occurrence != null;
-    assert ___SARLlocal_runnableCollection != null;
-    ___SARLlocal_runnableCollection.add(() -> $behaviorUnit$MemberLeft$9(occurrence));
-  }
-  
-  @SyntheticMember
-  @PerceptGuardEvaluator
-  private void $guardEvaluator$AgentSpawned(final AgentSpawned occurrence, final Collection<Runnable> ___SARLlocal_runnableCollection) {
-    assert occurrence != null;
-    assert ___SARLlocal_runnableCollection != null;
-    ___SARLlocal_runnableCollection.add(() -> $behaviorUnit$AgentSpawned$4(occurrence));
+    ___SARLlocal_runnableCollection.add(() -> $behaviorUnit$ContextJoined$9(occurrence));
   }
   
   @SyntheticMember
@@ -249,26 +421,26 @@ public class Person extends Agent {
   
   @SyntheticMember
   @PerceptGuardEvaluator
+  private void $guardEvaluator$NegotiationAnswer(final NegotiationAnswer occurrence, final Collection<Runnable> ___SARLlocal_runnableCollection) {
+    assert occurrence != null;
+    assert ___SARLlocal_runnableCollection != null;
+    ___SARLlocal_runnableCollection.add(() -> $behaviorUnit$NegotiationAnswer$4(occurrence));
+  }
+  
+  @SyntheticMember
+  @PerceptGuardEvaluator
   private void $guardEvaluator$Destroy(final Destroy occurrence, final Collection<Runnable> ___SARLlocal_runnableCollection) {
     assert occurrence != null;
     assert ___SARLlocal_runnableCollection != null;
-    ___SARLlocal_runnableCollection.add(() -> $behaviorUnit$Destroy$3(occurrence));
+    ___SARLlocal_runnableCollection.add(() -> $behaviorUnit$Destroy$6(occurrence));
   }
   
   @SyntheticMember
   @PerceptGuardEvaluator
-  private void $guardEvaluator$AgentKilled(final AgentKilled occurrence, final Collection<Runnable> ___SARLlocal_runnableCollection) {
+  private void $guardEvaluator$Negotiate(final Negotiate occurrence, final Collection<Runnable> ___SARLlocal_runnableCollection) {
     assert occurrence != null;
     assert ___SARLlocal_runnableCollection != null;
-    ___SARLlocal_runnableCollection.add(() -> $behaviorUnit$AgentKilled$5(occurrence));
-  }
-  
-  @SyntheticMember
-  @PerceptGuardEvaluator
-  private void $guardEvaluator$MemberJoined(final MemberJoined occurrence, final Collection<Runnable> ___SARLlocal_runnableCollection) {
-    assert occurrence != null;
-    assert ___SARLlocal_runnableCollection != null;
-    ___SARLlocal_runnableCollection.add(() -> $behaviorUnit$MemberJoined$8(occurrence));
+    ___SARLlocal_runnableCollection.add(() -> $behaviorUnit$Negotiate$3(occurrence));
   }
   
   @Override
@@ -282,6 +454,8 @@ public class Person extends Agent {
     if (getClass() != obj.getClass())
       return false;
     Person other = (Person) obj;
+    if (other.amountOfMessage != this.amountOfMessage)
+      return false;
     if (other.max != this.max)
       return false;
     if (other.min != this.min)
@@ -295,6 +469,7 @@ public class Person extends Agent {
   public int hashCode() {
     int result = super.hashCode();
     final int prime = 31;
+    result = prime * result + this.amountOfMessage;
     result = prime * result + this.max;
     result = prime * result + this.min;
     return result;

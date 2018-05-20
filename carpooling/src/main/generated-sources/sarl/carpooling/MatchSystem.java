@@ -93,7 +93,7 @@ public class MatchSystem extends Agent {
                 int _size_1 = matchPeople.size();
                 this.carpoolingAgentsNumber = (_carpoolingAgentsNumber + _size_1);
                 Logging _$CAPACITY_USE$IO_SARL_CORE_LOGGING$CALLER_3 = this.$castSkill(Logging.class, (this.$CAPACITY_USE$IO_SARL_CORE_LOGGING == null || this.$CAPACITY_USE$IO_SARL_CORE_LOGGING.get() == null) ? (this.$CAPACITY_USE$IO_SARL_CORE_LOGGING = this.$getSkill(Logging.class)) : this.$CAPACITY_USE$IO_SARL_CORE_LOGGING);
-                _$CAPACITY_USE$IO_SARL_CORE_LOGGING$CALLER_3.info(("% of people using carpooling: " + Double.valueOf((100 * (((double) this.carpoolingAgentsNumber) / this.agentNumber)))));
+                _$CAPACITY_USE$IO_SARL_CORE_LOGGING$CALLER_3.info(("% of people matched: " + Double.valueOf((100 * (((double) this.carpoolingAgentsNumber) / this.agentNumber)))));
                 matchesToErase.addAll(matchPeople);
                 for (final SingleProposition mp : matchPeople) {
                   {
@@ -119,16 +119,16 @@ public class MatchSystem extends Agent {
           this.matches.removeAll(matchesToErase);
         }
       };
-      _$CAPACITY_USE$IO_SARL_CORE_SCHEDULES$CALLER_2.every(waitTask, 100, _function_1);
+      _$CAPACITY_USE$IO_SARL_CORE_SCHEDULES$CALLER_2.every(waitTask, 1000, _function_1);
     };
-    _$CAPACITY_USE$IO_SARL_CORE_SCHEDULES$CALLER.in(10000, _function);
+    _$CAPACITY_USE$IO_SARL_CORE_SCHEDULES$CALLER.in(10, _function);
   }
   
   @SyntheticMember
   private void $behaviorUnit$Match$1(final Match occurrence) {
     Logging _$CAPACITY_USE$IO_SARL_CORE_LOGGING$CALLER = this.$castSkill(Logging.class, (this.$CAPACITY_USE$IO_SARL_CORE_LOGGING == null || this.$CAPACITY_USE$IO_SARL_CORE_LOGGING.get() == null) ? (this.$CAPACITY_USE$IO_SARL_CORE_LOGGING = this.$getSkill(Logging.class)) : this.$CAPACITY_USE$IO_SARL_CORE_LOGGING);
     String _locationName = occurrence.startLocation.getLocationName();
-    String _plus = ("Receiving S D: " + _locationName);
+    String _plus = ("Receiving  S D: " + _locationName);
     String _plus_1 = (_plus + " ");
     String _locationName_1 = occurrence.destination.getLocationName();
     String _plus_2 = (_plus_1 + _locationName_1);

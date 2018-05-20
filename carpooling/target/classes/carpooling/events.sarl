@@ -28,4 +28,35 @@ event Matched {
 	}
 }
 
+event Negotiate {
+
+	val personalData : PersonInformation
+	val driverReq  : PersonRequirements
+	
+	
+	new(personalData : PersonInformation, personalReq : PersonRequirements) {
+		this.driverReq = personalReq
+		this.personalData = personalData
+	}
+}
+
+event NegotiationAnswer {
+	val answer : boolean
+	val passengerReq : PersonRequirements
+
+	new(answer : boolean, requirements : PersonRequirements) {
+		this.answer= answer
+		this.passengerReq = requirements
+	}
+}
+
+event AnnounceDecision {
+	val answer : boolean
+
+	new(answer : boolean) {
+		this.answer = answer
+		
+	}
+}
+
 event MatchStart
